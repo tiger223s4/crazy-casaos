@@ -11,6 +11,7 @@ services:
     links:
       - minetrax-db
       - redis
+      - nginx
     # Environment variables for the minetrax service
     environment:
       - MYSQL_HOSTNAME=minetrax-db
@@ -88,6 +89,15 @@ services:
       test: ["CMD", "redis-cli", "ping"]
       retries: 3
       timeout: 5s
+
+  # Nginx service configuration
+  nginx:
+    image: nginx:latest
+    restart: always
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 80:80
 
 # CasaOS specific configuration
 x-casaos:
