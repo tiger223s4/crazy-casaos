@@ -1,0 +1,119 @@
+# Name of the configuration: big-bear-minetrax
+name: Minetrax
+
+# Define the services required for the application
+services:
+  # minetrax service configuration
+  minetrax:
+    image: minetrax/minetrax:latest
+    restart: always
+    # Link this service to the guacd service
+    links:
+      - minetrax-db
+      - redis
+    # Environment variables for the minetrax service
+    environment:
+      - MYSQL_HOSTNAME=minetrax-db
+      - MYSQL_DATABASE=minetrax_db
+      - MYSQL_USER=minetrax_user
+      - MYSQL_PASSWORD=some_password
+    # Map port 8090 on the host to port 8080 on the container
+    ports:
+      - 8090:8080
+
+    x-casaos: # CasaOS specific configuration
+      envs:
+        - container: MYSQL_HOSTNAME
+          description:
+            en_us: MySQL hostname
+        - container: MYSQL_DATABASE
+          description:
+            en_us: MySQL database
+        - container: MYSQL_USER
+          description:
+            en_us: MySQL user
+        - container: MYSQL_PASSWORD
+          description:
+            en_us: MySQL password
+      ports:
+        - container: "8080"
+          description:
+            en_us: "Container Port: 8080"
+
+  # minetrax-db service configuration
+  minetrax-db:
+    image: mysql:5.7
+    restart: always
+    # Environment variables for the MySQL service
+    environment:
+      - MYSQL_ROOT_PASSWORD=my-secret-pw
+      - MYSQL_DATABASE=minetrax_db
+      - MYSQL_USER=minetrax_user
+      - MYSQL_PASSWORD=some_password
+    # Volume mapping for persistent storage
+    volumes:
+      - /DATA/AppData/$AppID/mysql:/var/lib/mysql
+    x-casaos: # CasaOS specific configuration
+      envs:
+        - container: MYSQL_ROOT_PASSWORD
+          description:
+            en_us: MySQL root password
+        - container: MYSQL_DATABASE
+          description:
+            en_us: MySQL database
+        - container: MYSQL_USER
+          description:
+            en_us: MySQL user
+        - container: MYSQL_PASSWORD
+          description:
+            en_us: MySQL password
+      volumes:
+        - container: /var/lib/mysql
+          description:
+            en_us: "Container Path: /var/lib/mysql"
+      ports:
+        - container: "3306"
+          description:
+            en_us: "Container Port: 3306"
+
+  # Redis service configuration
+  redis:
+    image: 'redis:alpine'
+    restart: always
+    volumes:
+      - redis:/data
+    networks:
+      - web
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      retries: 3
+      timeout: 5s
+
+# CasaOS specific configuration
+x-casaos:
+  # Supported CPU architectures for the application
+  architectures:
+    - amd64
+  # Main service of the application
+  main: minetrax
+  # Application description in English
+  description:
+    en_us: MineTrax is a web-based platform for managing Minecraft servers, providing features such as monitoring, backups, and player management.
+  # Short description or tagline in English
+  tagline:
+    en_us: MineTrax
+  # Developer's name or identifier (currently empty)
+  developer: ""
+  # Author of this configuration
+  author: Craza gamer
+  # Icon for the application
+  icon: https://minetrax.github.io/img/logo.svg
+  # Thumbnail image (currently empty)
+  thumbnail: ""
+  # Title of the application in English
+  title:
+    en_us: MineTrax
+  # Application category
+  category: Minetrax
+  # Port mapping information
+  port_map: "8090"
